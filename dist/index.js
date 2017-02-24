@@ -53194,7 +53194,7 @@ class WebRTCStar {
 
       this.maSelf = ma
 
-      const sioUrl = cleanUrlSIO(ma)
+      const sioUrl='https://blooming-atoll-60728.herokuapp.com'
 
       log('Dialing to Signalling Server on: ' + sioUrl)
 
