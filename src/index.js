@@ -5,7 +5,9 @@ const MetadataHandler = require('./metadataHandler')
 
 class MongoIdbDs2 extends Ds2 {
   constructor (aDBName, indexedFields) {
-    super(new MetadataHandler(aDBName, {aDBName: indexedFields}))
+    let schema = {}
+    schema[aDBName] = indexedFields
+    super(new MetadataHandler(aDBName, schema))
   }
   query (aJsonQuery) {
     return super.query(JSON.stringify(aJsonQuery))
