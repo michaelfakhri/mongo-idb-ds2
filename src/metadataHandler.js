@@ -21,14 +21,14 @@ module.exports = class MetadataHandler {
   }
   store (fileHash, metadata) {
     metadata.hash = fileHash
-    return this.db.collection(this.tableName).insert(metadata)
+    return this.db[this.tableName].put(metadata).catch((err) => { throw err })
   }
   get (fileHash) {
     let query = {hash: fileHash}
-    return this.db.collection(this.tableName).find(query).toArray()
+    return this.db[this.tableName].find(query).toArray().catch((err) => { throw err })
   }
   query (aQueryStr) {
     let query = JSON.parse(aQueryStr)
-    return this.db.collection(this.tableName).find(query).toArray()
+    return this.db[this.tableName].find(query).toArray().catch((err) => { throw err })
   }
 }

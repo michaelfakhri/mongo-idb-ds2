@@ -20,7 +20,7 @@ describe('MongoIdbDs2 - instance', () => {
 
 describe('MongoIdbDs2 - query', () => {
   it('query', (done) => {
-    let node = new MongoIdbDs2('test3', 'index1, index2, index3')
+    let node = new MongoIdbDs2('test3', 'hash, index1, index2, index3')
     node.start()
       .then(() => node.publish('itemData1', {index1: 'metadata1', index2: 'metadata2', index3: 'metadata3'}))
       .then(() => node.query({}))
