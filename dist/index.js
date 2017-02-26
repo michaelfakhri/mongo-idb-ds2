@@ -80424,6 +80424,14 @@ module.exports = class ConnectionHandler {
     delete this.activeQueryConnections[userHash]
     delete this._node.swarm.muxedConns[userHash]
   }
+
+  getIdentity () {
+    return this.myId
+  }
+
+  getConnectedPeers () {
+    return Object.keys(this.activeQueryConnections)
+  }
 }
 
 
@@ -80689,6 +80697,14 @@ module.exports = class UniversalPeerToPeer {
     let request = Request.create('query', aQueryStr)
     this._EE.emit('IncomingRequest', request)
     return request.getDeferred().promise
+  }
+
+  getIdentity () {
+    return this._connectionHandler.getIdentity()
+  }
+
+  getConnectedPeers () {
+    return this._connectionHandler.getConnectedPeers()
   }
 }
 
