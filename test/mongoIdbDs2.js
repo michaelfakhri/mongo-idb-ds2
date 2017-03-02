@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 'use strict'
-const Ds2 = require('universal-peer-to-peer')
 const assert = require('chai').assert
+const Ds2 = require('universal-peer-to-peer')
 
 const MongoIdbDs2 = require('../src')
 

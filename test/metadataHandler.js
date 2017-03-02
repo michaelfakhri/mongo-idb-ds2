@@ -30,20 +30,20 @@ describe('MetadataHandler - get', () => {
     metadata = new MetadataHandler('testDB2', {testDB2: 'name, year'})
     metadata.store('itemHash1', {name: 'testItem1', year: 2017})
       .then(() => metadata.store('itemHash2', {name: 'testItem2', year: 2001}))
-      .then((item) => { /* do nothing*/
+      .then((promise) => { /* do nothing*/
       })
       .then(done)
       .catch((err) => { throw err })
   })
   it('Retrieve using get', (done) => {
     metadata.get('itemHash1')
-      .then((items) => assert.sameDeepMembers(items, [{hash: 'itemHash1', name: 'testItem1', year: 2017}]))
+      .then((items) => assert.sameDeepMembers([items], [{hash: 'itemHash1', name: 'testItem1', year: 2017}]))
       .then(done)
       .catch((err) => { throw err })
   })
   it('Retrieve non-existent using get', (done) => {
     metadata.get('item0')
-      .then((items) => assert.sameDeepMembers(items, []))
+      .then((items) => assert.sameDeepMembers([items], [undefined]))
       .then(done)
       .catch((err) => { throw err })
   })
