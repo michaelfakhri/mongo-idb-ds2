@@ -29039,8 +29039,8 @@ const Ds2 = __webpack_require__(542)
 const MetadataHandler = __webpack_require__(557)
 
 class MongoIdbDs2 extends Ds2 {
-  constructor (aDBName, indexedFields) {
-    super(new MetadataHandler(aDBName, {[aDBName]: indexedFields}))
+  constructor (aDBName, indexedFields, options) {
+    super(new MetadataHandler(aDBName, {[aDBName]: indexedFields}), options)
   }
   query (aJsonQuery) {
     return super.query(JSON.stringify(aJsonQuery))
@@ -49798,7 +49798,7 @@ class WebRTCStar {
 
       this.maSelf = ma
 
-      const sioUrl='https://blooming-atoll-60728.herokuapp.com'
+      const sioUrl = cleanUrlSIO(ma)
 
       log('Dialing to Signalling Server on: ' + sioUrl)
 
@@ -80302,10 +80302,12 @@ Logger.setLogLevel(Logger.LogLevels.DEBUG) // change to ERROR
 const logger = Logger.create('ConnectionHandler', { color: Logger.Colors.Blue })
 
 module.exports = class ConnectionHandler {
-  constructor (EE) {
+  constructor (EE, options) {
     this._EE = EE
     this.activeQueryConnections = {}
     this.activeFtpConnections = {}
+    this._options = options
+    this._signalling = options.signalling || '/libp2p-webrtc-star/ip4/127.0.0.1/tcp/15555/ws/ipfs/'
     this._node
     this.myId
 
@@ -80330,10 +80332,10 @@ module.exports = class ConnectionHandler {
       let userHash = request.getTarget()
       var deferredFile = request.getDeferred()
       if (!self.activeFtpConnections[userHash] || !self.activeQueryConnections[userHash]) {
-        deferredFile.reject(new Error('user is not connected'))
+        return deferredFile.reject(new Error('user is not connected'))
       }
       if (self.activeFtpConnections[userHash].activeIncoming) {
-        deferredFile.reject(new Error('There is a file currently being transferred'))
+        return deferredFile.reject(new Error('There is a file currently being transferred'))
       }
       request.attachConnection(self.activeFtpConnections[userHash].connection)
       self.activeFtpConnections[userHash].activeIncoming = true
@@ -80348,16 +80350,20 @@ module.exports = class ConnectionHandler {
     this.sendRequestToUser(request.getRoute()[myIndex - 1], request)
   }
   onReleaseConnection (userHash) {
+    let self = this
     this.activeFtpConnections[userHash].activeIncoming = false
+    var ma = this._signalling + userHash
+    deferred.promisify(self._node.dialByMultiaddr.bind(self._node))(ma, '/UP2P/fileTransfer')
+      .then((conn) => self.initFtpStream(conn))
   }
 
   start (aPeerId) {
     let self = this
     let peerInfo = new PeerInfo(aPeerId)
-    self._node = new Libp2p(peerInfo)
+    self._node = new Libp2p(peerInfo, self._options)
     self._node.handle('/UP2P/queryTransfer', (protocol, conn) => self.initQueryStream(conn))
     self._node.handle('/UP2P/fileTransfer', (protocol, conn) => self.initFtpStream(conn))
-    let ma = '/libp2p-webrtc-star/ip4/127.0.0.1/tcp/15555/ws/ipfs/' + aPeerId.toB58String()
+    let ma = this._signalling + aPeerId.toB58String()
     peerInfo.multiaddr.add(ma)
     logger.debug('YOU CAN REACH ME AT ID = ' + aPeerId.toB58String())
     this.myId = aPeerId.toB58String()
@@ -80365,7 +80371,8 @@ module.exports = class ConnectionHandler {
     // return peer-id instance after libp2p node is started so other modules can use it
     return deferred.promisify(self._node.start.bind(self._node))().then(() => aPeerId)
   }
-  connect (ma) {
+  connect (userHash) {
+    let ma = this._signalling + userHash
     let self = this
     return deferred.promisify(self._node.dialByMultiaddr.bind(self._node))(ma, '/UP2P/queryTransfer')
       .then((conn) => self.initQueryStream(conn))
@@ -80374,7 +80381,7 @@ module.exports = class ConnectionHandler {
   }
 
   disconnect (userHash) {
-    var ma = '/libp2p-webrtc-star/ip4/127.0.0.1/tcp/15555/ws/ipfs/' + userHash
+    var ma = this._signalling + userHash
     // TODO: REMOVE THE FOLLOWING LINE WHEN HANGUP BUG IS INVESTIGATED/FIXED
     this.disconnectConnection(userHash)
     return deferred.promisify(this._node.hangUpByMultiaddr.bind(this._node))(ma)
@@ -80634,15 +80641,17 @@ const ConnectionHandler = __webpack_require__(540)
 
 module.exports = class UniversalPeerToPeer {
 
-  constructor (aFileMetadataHandler) {
+  constructor (aFileMetadataHandler, options) {
     if (!aFileMetadataHandler) {
       throw new Error('Must specify at least the file metadataHandler')
     }
 
+    options = options || {}
+
     this._EE = new EE()
-    this._requestHandler = new RequestHandler(this._EE)
-    this._connectionHandler = new ConnectionHandler(this._EE)
-    this._db = new DatabaseManager(aFileMetadataHandler, this._EE)
+    this._requestHandler = new RequestHandler(this._EE, options)
+    this._connectionHandler = new ConnectionHandler(this._EE, options)
+    this._db = new DatabaseManager(aFileMetadataHandler, this._EE, options)
   }
 
   start (aPeerId) {
@@ -80657,9 +80666,8 @@ module.exports = class UniversalPeerToPeer {
   }
 
   connect (aUserHashStr) {
-    var ma = '/libp2p-webrtc-star/ip4/127.0.0.1/tcp/15555/ws/ipfs/' + aUserHashStr
     logger.debug('Attempting to connect to ' + aUserHashStr)
-    return this._connectionHandler.connect(ma)
+    return this._connectionHandler.connect(aUserHashStr)
   }
   disconnect (aUserHashStr) {
     return this._connectionHandler.disconnect(aUserHashStr)
@@ -80724,8 +80732,15 @@ const secio = __webpack_require__(380)
 const libp2p = __webpack_require__(389)
 
 class Node extends libp2p {
-  constructor (peerInfo) {
+  constructor (peerInfo, options) {
+    let encryption
     const webRTCStar = new WebRTCStar()
+
+    if (options.useEncryption) {
+      encryption = [secio]
+    } else {
+      encryption = []
+    }
 
     const modules = {
       transport: [
@@ -80735,9 +80750,7 @@ class Node extends libp2p {
         muxer: [
           spdy
         ],
-        crypto: [
-          secio
-        ]
+        crypto: encryption
       },
       discovery: []
     }
