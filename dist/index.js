@@ -80472,7 +80472,7 @@ module.exports = class DatabaseManager {
         if (request.isRequestOriginThisNode()) {
           response = {id: 'local', result: queryResult}
         } else {
-          response = {id: self.myId, hops:(request.getRoute().length - 1), result: queryResult}
+          response = {id: self.myId, hops: (request.getRoute().length - 1), result: queryResult}
         }
         request.setResult([response])
         self._EE.emit('IncomingResponse', request)
@@ -81558,7 +81558,7 @@ function extend() {
 
 
 const Dexie = __webpack_require__(81)
-const mongoifyDexie = __webpack_require__(264)
+const mongoifyDexie = __webpack_require__(264) // eslint-disable-line no-unused-vars
 
 module.exports = class MetadataHandler {
 
@@ -81574,7 +81574,6 @@ module.exports = class MetadataHandler {
     this.db.version(1).stores(aJsonSchema)
     this.db.open()
       .catch((err) => { throw err })
-
   }
   store (fileHash, metadata) {
     metadata.hash = fileHash
@@ -81589,7 +81588,6 @@ module.exports = class MetadataHandler {
     return this.db[this.tableName].find(query).toArray().catch((err) => { throw err })
   }
   delete (fileHash) {
-    // let query = {hash: fileHash}
     return this.db[this.tableName].delete(fileHash).catch((err) => { throw err })
   }
 }
