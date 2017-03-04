@@ -31,4 +31,8 @@ module.exports = class MetadataHandler {
     let query = JSON.parse(aQueryStr)
     return this.db[this.tableName].find(query).toArray().catch((err) => { throw err })
   }
+  delete (fileHash) {
+    // let query = {hash: fileHash}
+    return this.db[this.tableName].delete(fileHash).catch((err) => { throw err })
+  }
 }

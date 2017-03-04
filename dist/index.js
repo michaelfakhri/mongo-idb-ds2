@@ -28224,9 +28224,6 @@ exports.transform = function (stream) {
 
 const defer = __webpack_require__(54)
 
-const MAXIMUM_TIME_TO_LIVE_QUERY = 5
-const MAXIMUM_TIME_TO_LIVE_FTP = 1
-
 class Request {
   constructor (aRequest, target) {
     this._request = aRequest
@@ -28326,15 +28323,12 @@ class Request {
 
 module.exports = Request
 
-Request.create = function (type, aRequest, target) {
+Request.create = function (type, aRequest, target, hops) {
   let request = {}
   request.request = aRequest
   request.type = type
-  if (type === 'query') {
-    request.timeToLive = MAXIMUM_TIME_TO_LIVE_QUERY
-  } else if (type === 'file') {
-    request.timeToLive = MAXIMUM_TIME_TO_LIVE_FTP
-  }
+  request.timeToLive = hops
+
   request.id = window.crypto.getRandomValues(new Uint32Array(1))[0]
   request.response = false
   request.route = []
@@ -29042,8 +29036,8 @@ class MongoIdbDs2 extends Ds2 {
   constructor (aDBName, indexedFields, options) {
     super(new MetadataHandler(aDBName, {[aDBName]: indexedFields}), options)
   }
-  query (aJsonQuery) {
-    return super.query(JSON.stringify(aJsonQuery))
+  query (aJsonQuery, hops) {
+    return super.query(JSON.stringify(aJsonQuery), hops)
   }
 }
 
@@ -80381,9 +80375,10 @@ module.exports = class ConnectionHandler {
   }
 
   disconnect (userHash) {
-    var ma = this._signalling + userHash
+    let self = this
+    var ma = self._signalling + userHash
     // TODO: REMOVE THE FOLLOWING LINE WHEN HANGUP BUG IS INVESTIGATED/FIXED
-    this.disconnectConnection(userHash)
+    self.disconnectConnection(userHash)
     return deferred.promisify(this._node.hangUpByMultiaddr.bind(this._node))(ma)
   }
   initQueryStream (connection) {
@@ -80394,7 +80389,7 @@ module.exports = class ConnectionHandler {
       connection, // p2p connection
       pullDecode(), // convert uint8 to utf8
       stream.drain(self.queryTransferProtocolHandler.bind(self), // function called when data arrives
-        (err) => {
+        (err, something) => {
           if (err) throw err
           connection.getObservedAddrs(function (err, data) { if (err) throw err; var addr = data[0].toString().split('/'); self.disconnectConnection(addr[addr.length - 1]) })
         }
@@ -80426,10 +80421,11 @@ module.exports = class ConnectionHandler {
     this.activeQueryConnections[userHash].push(ftpRequest.serialize())
   }
   disconnectConnection (userHash) {
-    if (this.activeQueryConnections[userHash]) this.activeQueryConnections[userHash].end()
-    // TODO: Remove this forceful disconnection code
-    delete this.activeQueryConnections[userHash]
-    delete this._node.swarm.muxedConns[userHash]
+    if (this.activeQueryConnections[userHash] || this.activeFtpConnections[userHash]) {
+      this.activeQueryConnections[userHash].end()
+      delete this.activeQueryConnections[userHash]
+      delete this.activeFtpConnections[userHash]
+    }
   }
 
   getIdentity () {
@@ -80613,6 +80609,9 @@ module.exports = class DatabaseManager {
   queryMetadata (aQueryStr) {
     return this.metadata.query(aQueryStr)
   }
+  deleteMetadata (fileHash) {
+    return this.metadata.delete(fileHash)
+  }
 }
 
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0).Buffer))
@@ -80632,12 +80631,13 @@ const EE = __webpack_require__(12).EventEmitter
 const Request = __webpack_require__(195)
 const DatabaseManager = __webpack_require__(541)
 const RequestHandler = __webpack_require__(544)
-
 Logger.setLogLevel(Logger.LogLevels.DEBUG) // change to ERROR
 
 const logger = Logger.create('UP2P', { color: Logger.Colors.Blue })
 
 const ConnectionHandler = __webpack_require__(540)
+
+const DEFAULT_HOPS_QUERY = 5
 
 module.exports = class UniversalPeerToPeer {
 
@@ -80694,16 +80694,18 @@ module.exports = class UniversalPeerToPeer {
 
   delete (aDataHashStr) {
     return this._db.deleteFile(aDataHashStr)
+      .then(() => this._db.deleteMetadata(aDataHashStr))
   }
 
   copy (aDataHashStr, aUserHashStr) {
-    let request = Request.create('file', {file: aDataHashStr}, aUserHashStr)
+    let request = Request.create('file', {file: aDataHashStr}, aUserHashStr, 2) // 1 for target user and +1 for processing by current node
     this._EE.emit('IncomingRequest', request)
     return request.getDeferred().promise
   }
 
-  query (aQueryStr) {
-    let request = Request.create('query', aQueryStr)
+  query (aQueryStr, hops) {
+    hops = (hops || hops === 0) ? hops : DEFAULT_HOPS_QUERY
+    let request = Request.create('query', aQueryStr, undefined, hops + 1) // +1 for processing by the current node
     this._EE.emit('IncomingRequest', request)
     return request.getDeferred().promise
   }
@@ -80760,6 +80762,7 @@ class Node extends libp2p {
 }
 
 module.exports = Node
+
 
 /***/ }),
 /* 544 */
@@ -81584,6 +81587,10 @@ module.exports = class MetadataHandler {
   query (aQueryStr) {
     let query = JSON.parse(aQueryStr)
     return this.db[this.tableName].find(query).toArray().catch((err) => { throw err })
+  }
+  delete (fileHash) {
+    // let query = {hash: fileHash}
+    return this.db[this.tableName].delete(fileHash).catch((err) => { throw err })
   }
 }
 

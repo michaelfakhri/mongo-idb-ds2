@@ -6,7 +6,7 @@ const assert = require('chai').assert
 describe('MetadataHandler - store', () => {
   let metadata
   before((done) => {
-    metadata = new MetadataHandler('testDB1', {testDB1: 'name, year'})
+    metadata = new MetadataHandler('testDB1', {testDB1: 'hash, name, year'})
     done()
   })
   it('store 1st item and count', (done) => {
@@ -24,10 +24,28 @@ describe('MetadataHandler - store', () => {
       .catch((err) => { throw err })
   })
 })
+describe('MetadataHandler - delete', () => {
+  let metadata
+  before((done) => {
+    metadata = new MetadataHandler('testDB2', {testDB2: 'hash, name, year'})
+    done()
+  })
+  it('store 2 items then delete one', (done) => {
+    metadata.store('itemHash1', {name: 'testItem1', year: 2017})
+      .then(() => metadata.store('itemHash2', {name: 'testItem2', year: 2001}))
+      .then(() => metadata.db.collection(metadata.tableName).count({}))
+      .then((count) => assert.strictEqual(count, 2))
+      .then(() => metadata.delete('itemHash2'))
+      .then(() => metadata.db.collection(metadata.tableName).count({}))
+      .then((count) => assert.strictEqual(count, 1))
+      .then(done)
+      .catch((err) => { throw err })
+  })
+})
 describe('MetadataHandler - get', () => {
   let metadata
   before((done) => {
-    metadata = new MetadataHandler('testDB2', {testDB2: 'name, year'})
+    metadata = new MetadataHandler('testDB3', {testDB3: 'hash, name, year'})
     metadata.store('itemHash1', {name: 'testItem1', year: 2017})
       .then(() => metadata.store('itemHash2', {name: 'testItem2', year: 2001}))
       .then((promise) => { /* do nothing*/
@@ -52,7 +70,7 @@ describe('MetadataHandler - get', () => {
 describe('MetadataHandler - query numeric values', () => {
   let metadata
   before((done) => {
-      metadata = new MetadataHandler('testDB3', {testDB3: 'name, year'})
+      metadata = new MetadataHandler('testDB4', {testDB4: 'hash, name, year'})
       metadata.store('itemHash1', {name: 'testItem1', year: 2017})
       .then(() => metadata.store('itemHash2', {name: 'testItem2', year: 2001}))
       .then((item) => { /* do nothing*/ })

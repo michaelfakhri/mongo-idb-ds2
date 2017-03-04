@@ -7,8 +7,8 @@ class MongoIdbDs2 extends Ds2 {
   constructor (aDBName, indexedFields, options) {
     super(new MetadataHandler(aDBName, {[aDBName]: indexedFields}), options)
   }
-  query (aJsonQuery) {
-    return super.query(JSON.stringify(aJsonQuery))
+  query (aJsonQuery, hops) {
+    return super.query(JSON.stringify(aJsonQuery), hops)
   }
 }
 
