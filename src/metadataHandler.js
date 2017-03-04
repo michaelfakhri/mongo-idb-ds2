@@ -1,7 +1,7 @@
 'use strict'
 
 const Dexie = require('dexie')
-const mongoifyDexie = require('dexie-mongoify/src/dexie.mongoify')
+const mongoifyDexie = require('dexie-mongoify/src/dexie.mongoify') // eslint-disable-line no-unused-vars
 
 module.exports = class MetadataHandler {
 
@@ -17,7 +17,6 @@ module.exports = class MetadataHandler {
     this.db.version(1).stores(aJsonSchema)
     this.db.open()
       .catch((err) => { throw err })
-
   }
   store (fileHash, metadata) {
     metadata.hash = fileHash
@@ -32,7 +31,6 @@ module.exports = class MetadataHandler {
     return this.db[this.tableName].find(query).toArray().catch((err) => { throw err })
   }
   delete (fileHash) {
-    // let query = {hash: fileHash}
     return this.db[this.tableName].delete(fileHash).catch((err) => { throw err })
   }
 }

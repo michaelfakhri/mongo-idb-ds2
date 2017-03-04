@@ -48,8 +48,7 @@ describe('MetadataHandler - get', () => {
     metadata = new MetadataHandler('testDB3', {testDB3: 'hash, name, year'})
     metadata.store('itemHash1', {name: 'testItem1', year: 2017})
       .then(() => metadata.store('itemHash2', {name: 'testItem2', year: 2001}))
-      .then((promise) => { /* do nothing*/
-      })
+      .then((promise) => { /* do nothing */ })
       .then(done)
       .catch((err) => { throw err })
   })
@@ -70,10 +69,10 @@ describe('MetadataHandler - get', () => {
 describe('MetadataHandler - query numeric values', () => {
   let metadata
   before((done) => {
-      metadata = new MetadataHandler('testDB4', {testDB4: 'hash, name, year'})
-      metadata.store('itemHash1', {name: 'testItem1', year: 2017})
+    metadata = new MetadataHandler('testDB4', {testDB4: 'hash, name, year'})
+    metadata.store('itemHash1', {name: 'testItem1', year: 2017})
       .then(() => metadata.store('itemHash2', {name: 'testItem2', year: 2001}))
-      .then((item) => { /* do nothing*/ })
+      .then((item) => { /* do nothing */ })
       .then(done)
       .catch((err) => { throw err })
   })
@@ -85,7 +84,7 @@ describe('MetadataHandler - query numeric values', () => {
   })
   it('Retrieve non-existent using query', (done) => {
     metadata.query(JSON.stringify({year: 3000}))
-      .then((items) => assert.sameDeepMembers(items,[]))
+      .then((items) => assert.sameDeepMembers(items, []))
       .then(done)
       .catch((err) => { throw err })
   })
