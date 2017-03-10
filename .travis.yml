@@ -10,7 +10,7 @@ before_install:
 
 script:
   - gulp lint
-  - gulp test:browser
+  - gulp test:browser --dom
 
 before_script:
   - export DISPLAY=:99.0

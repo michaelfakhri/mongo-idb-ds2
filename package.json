@@ -1,6 +1,6 @@
 {
   "name": "mongo-idb-ds2",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "",
   "main": "src/index.js",
   "scripts": {
@@ -21,7 +21,7 @@
     "deferred": "0.7.5",
     "dexie": "1.5.1",
     "dexie-mongoify": "1.2.3",
-    "universal-peer-to-peer": "git://github.com/michaelfakhri/universal-peer-to-peer.git#master"
+    "ds2": "0.0.4"
   },
   "devDependencies": {
     "chai": "3.5.0",

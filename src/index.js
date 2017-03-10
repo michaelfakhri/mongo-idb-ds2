@@ -1,6 +1,6 @@
 'use strict'
 
-const Ds2 = require('universal-peer-to-peer')
+const Ds2 = require('ds2')
 const MetadataHandler = require('./metadataHandler')
 
 class MongoIdbDs2 extends Ds2 {
