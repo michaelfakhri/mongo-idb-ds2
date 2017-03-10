@@ -4,7 +4,7 @@
   "description": "",
   "main": "src/index.js",
   "scripts": {
-    "test": "gulp test"
+    "test": "gulp test:browser --dom"
   },
   "repository": {
     "type": "git",
