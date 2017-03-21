@@ -16,6 +16,7 @@ Querying is done through flooding of the network through your connected peers in
 The network model and API are derived from work on the (DS)<sup>2</sup> thesis by Alan Davoust which can be found [here](http://sce.carleton.ca/~adavoust/A_Davoust_PhD_Thesis_2015.pdf).
 ### API
 The API is documented [here](API.md).
+<br>
 The query syntax is defined [here](https://github.com/YurySolovyov/dexie-mongoify/blob/master/docs/query-api.md).
 ### Usage
 This library is available through the following sources:
