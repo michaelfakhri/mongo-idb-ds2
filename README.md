@@ -27,7 +27,7 @@ This library is available through the following sources:
 
 // Create a new instance and start it
 // MetadataHandler is a metadata storage class that implements MetadataHandler interface.
-let node = new MongoIdbDs2("stamps", "hash, name, country, year")
+let node = new MongoIdbDs2('stamps', 'hash, name, country, year')
 node.start()
 .then(() => {
   // Node has started
