@@ -1,7 +1,7 @@
 'use strict'
 
 const Ds2 = require('ds2')
-const MetadataHandler = require('./metadataHandler')
+const MetadataHandler = require('./MetadataHandler')
 
 class MongoIdbDs2 extends Ds2 {
   constructor (aDBName, indexedFields, options) {
