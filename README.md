@@ -1,6 +1,6 @@
 <h1 align="center">MongoIdbDs2</h1>
 
-[![Greenkeeper badge](https://badges.greenkeeper.io/michaelfakhri/ds2.svg)](https://greenkeeper.io/)
+[![Greenkeeper badge](https://badges.greenkeeper.io/michaelfakhri/mongo-idb-ds2.svg)](https://greenkeeper.io/)
 [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/feross/standard)
 ![](https://img.shields.io/badge/npm-%3E%3D%203.0.0-orange.svg?style=flat-square)
 ![](https://img.shields.io/badge/Node.js-%3E%3D%204.0.0-orange.svg?style=flat-square)
