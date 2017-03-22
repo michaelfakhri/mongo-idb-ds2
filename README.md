@@ -52,6 +52,7 @@ node.publish(fileContents : ArrayBuffer, {name: ‘stamp 1’, country: 'Canada'
 ```
 ### Development prerequisites
 ![](https://img.shields.io/badge/npm-%3E%3D%203.0.0-red.svg?style=flat-square)
+<br>
 ![](https://img.shields.io/badge/Node.js-%3E%3D%204.0.0-green.svg?style=flat-square)
 ### Install
 `npm install`
